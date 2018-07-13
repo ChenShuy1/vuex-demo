@@ -8,16 +8,29 @@
       @keyup.enter="addTodo">
     <ul class="todo-list">
       <TodoItem
-        v-for="(todo, index) in todos"
+        v-for="(todo, index) in filterTodos"
         :key="index"
         :todo="todo"
       />
     </ul>
+    <div class="tab">
+      <button type="button" name="button" @click="getAll">全部</button>
+      <button type="button" name="button" @click="getActive">未完成</button>
+      <button type="button" name="button" @click="getCompleted">完成</button>
+    </div>
   </div>
 </template>
 
 <script>
 import TodoItem from './TodoItem'
+import { mapGetters } from 'vuex'
+
+const filter = {
+  'all': (todos) => todos,
+  'active': (todos) => todos.filter((todo) => !todo.completed),
+  'completed': (todos) => todos.filter((todo) => todo.completed)
+}
+
 export default {
   name: 'TodoList',
   components: {
@@ -25,14 +38,38 @@ export default {
   },
   data () {
     return {
-      todos: [{
-        content: '112',
-        completed: true
-      }, {
-        content: '1232',
-        completed: false
-      }],
+      filter,
+      visibility: 'all',
       msg: 'Welcome to Your Vue.js App'
+    }
+  },
+  computed: {
+    todos() {
+      return this.$store.state.todos;
+    },
+    filterTodos () {
+      return this.filter[this.visibility](this.todos);
+    }
+  },
+  methods: {
+    addTodo: function(e) {
+      const content = e.target.value;
+      e.target.value = '';
+      if (content) {
+        this.todos.push({
+          content,
+          completed: false
+        })
+      }
+    },
+    getAll: function() {
+      this.visibility = 'all';
+    },
+    getActive: function() {
+      this.visibility = 'active';
+    },
+    getCompleted: function() {
+      this.visibility = 'completed';
     }
   }
 }
